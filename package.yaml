@@ -13,8 +13,18 @@ extra-source-files:
 
 dependencies:
   - base >= 4.7 && < 5
+  - HUnit
+  - linear
+  - Yampa
 
 executables:
   f1racer:
     source-dirs:      src
     main:             Main.hs
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs: 
+      - test
+      - src

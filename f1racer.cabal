@@ -20,9 +20,30 @@ extra-source-files:
 executable f1racer
   main-is: Main.hs
   other-modules:
+      Physics
       Paths_f1racer
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , Yampa
+    , base >=4.7 && <5
+    , linear
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Main
+      Physics
+      Paths_f1racer
+  hs-source-dirs:
+      test
+      src
+  build-depends:
+      HUnit
+    , Yampa
+    , base >=4.7 && <5
+    , linear
   default-language: Haskell2010
