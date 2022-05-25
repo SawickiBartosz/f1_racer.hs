@@ -28,7 +28,9 @@ executable f1racer
       HUnit
     , Yampa
     , base >=4.7 && <5
+    , gloss
     , linear
+    , simple-affine-space
   default-language: Haskell2010
 
 test-suite spec
@@ -45,5 +47,7 @@ test-suite spec
       HUnit
     , Yampa
     , base >=4.7 && <5
+    , gloss
     , linear
+    , simple-affine-space
   default-language: Haskell2010

@@ -16,6 +16,8 @@ dependencies:
   - HUnit
   - linear
   - Yampa
+  - simple-affine-space
+  - gloss
 
 executables:
   f1racer:
