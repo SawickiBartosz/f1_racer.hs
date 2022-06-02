@@ -18,7 +18,10 @@ dependencies:
   - Yampa
   - simple-affine-space
   - gloss
-
+  - cassava
+  - bytestring
+  - vector
+  - split
 executables:
   f1racer:
     source-dirs:      src
