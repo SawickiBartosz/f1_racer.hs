@@ -13,26 +13,22 @@ import qualified Data.ByteString.Lazy as BL
 import Graphics.Gloss
 import qualified Graphics.Gloss.Interface.IO.Game as G
 
-readObstacles :: IO [Obstacle]
-fun = do
-  csvData <- BL.readFile "world.csv"
-  return $ case ((decode NoHeader csvData) :: Either String (DV.Vector ParsableObstacle)) of
-        Prelude.Left err -> []
-        Prelude.Right x ->  DV.toList $ DV.map fromParsableObstacle x
 
 main :: IO ()
 main = do
+  csvData <- BL.readFile "world.csv"
+  obstacles <- case ((decode NoHeader csvData) :: Either String (DV.Vector ParsableObstacle)) of
+        Prelude.Left err -> return []
+        Prelude.Right x -> return $ DV.toList $ DV.map fromParsableObstacle x
   playYampa
       (InWindow "F1 Racer" (800, 600) (200, 200))
       white
       60
-      mainSF
+      (mainSF obstacles)
 
-mainSF :: SF (Event InputEvent) Picture
-mainSF = ((FRP.Yampa.time &&& parseInput) &&& spawnObstacles) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr makeWorld >>> arr renderWorld
+mainSF :: [Obstacle] ->  SF (Event InputEvent) Picture
+mainSF obstacles = ((FRP.Yampa.time &&& parseInput) &&& (constant obstacles)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr makeWorld >>> arr renderWorld
 
-spawnObstacles :: SF a (IO [Obstacle])
-spawnObstacles = arr readObstacles
 
 parseInput :: SF (Event InputEvent) (Event Direction)
 parseInput = arr $ \event ->
@@ -44,8 +40,8 @@ parseInput = arr $ \event ->
     _ -> event `tag` None
     -- // TODO trigger directions if key is crrently pressed 
 
-makeWorld :: ((Pos, Vel), Time) -> World
-makeWorld ((p,v), t) = World ([Car p v red]) ([Obstacle (vector2 100.0 100.0) (vector2 25.0 25.0) 10]) t
+makeWorld :: ((Pos, Vel, [Obstacle]), Time) -> World
+makeWorld ((p,v, obs), t) = World ([Car p v red]) obs t
 
 renderWorld :: World -> Picture
 renderWorld (World cars obstacles t) = pictures $ (map renderCar cars) ++ (map renderObstacle obstacles) ++ [scale 0.1 0.1 (text $ show $ round t)]
