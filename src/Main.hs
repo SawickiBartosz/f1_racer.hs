@@ -1,4 +1,6 @@
 {-#OPTIONS -Wall #-}
+{-# LANGUAGE Arrows #-}
+
 module Main where
 
 import FRP.Yampa
@@ -9,6 +11,7 @@ import Data.Vector2
 import Data.Csv
 import qualified Data.Vector as DV
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.Set as S
 import Graphics.Gloss
 import qualified Graphics.Gloss.Interface.IO.Game as G
 
@@ -20,7 +23,7 @@ main = do
         Prelude.Left _ -> return []
         Prelude.Right x -> return $ DV.toList $ DV.map fromParsableObstacle x
   playYampa
-      (InWindow "F1 Racer" (800, 600) (200, 200))
+      (InWindow "F1 Racer" (800, 600) (400, 300))
       white
       60
       (mainSF obs)
@@ -28,18 +31,26 @@ main = do
 mainSF :: [Obstacle] ->  SF (Event InputEvent) Picture
 mainSF obs = ((FRP.Yampa.time &&& parseInput) &&& (constant obs)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr makeWorld >>> arr renderWorld
 
+parseInput :: SF (Event InputEvent) (Event [Direction])
+parseInput = loopPre (S.empty) (arr parseInput')
 
-parseInput :: SF (Event InputEvent) (Event Direction)
-parseInput = arr $ \e ->
-  case e of
-    Event (G.EventKey (G.SpecialKey G.KeyUp) G.Down _ _) -> e `tag` Types.Up
-    Event (G.EventKey (G.SpecialKey G.KeyDown) G.Down _ _) -> e `tag` Types.Down
-    Event (G.EventKey (G.SpecialKey G.KeyLeft) G.Down _ _) -> e `tag` Types.Left
-    Event (G.EventKey (G.SpecialKey G.KeyRight) G.Down _ _) -> e `tag` Types.Right
-    _ -> e `tag` None
-    -- // TODO trigger directions if key is crrently pressed 
+parseInput' :: (Event InputEvent, S.Set (G.Key)) ->  (Event [Direction], S.Set (G.Key))
+parseInput' (input, set) = (keysSetToDirections $ inputToKeysSet input set, inputToKeysSet input set)
 
+inputToKeysSet :: Event InputEvent -> S.Set (G.Key) -> S.Set (G.Key)
+inputToKeysSet (Event (G.EventKey k G.Down _ _)) set = S.insert k set
+inputToKeysSet (Event (G.EventKey k G.Up _ _)) set = S.delete k set
+inputToKeysSet (Event _) set = set
+inputToKeysSet NoEvent set = set
 
+keysSetToDirections :: S.Set (G.Key) -> Event [Direction]
+keysSetToDirections set = catEvents $ map (\k -> 
+  case k of
+    (G.SpecialKey G.KeyDown) -> Event Types.Down
+    (G.SpecialKey G.KeyUp) -> Event Types.Up
+    (G.SpecialKey G.KeyLeft) -> Event Types.Left
+    (G.SpecialKey G.KeyRight) -> Event Types.Right
+    _ -> Event Types.None) (S.toList set)
 
 
 makeWorld :: ((Pos, Vel, [Obstacle]), Time) -> World

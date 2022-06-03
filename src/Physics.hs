@@ -9,7 +9,7 @@ import Data.Vector2
 drag :: Vel -> Force
 drag zeroVector = zeroVector
 drag v = (-c * (norm v)) *^ (normalize v)
-            where c = 0.05
+            where c = 0.2
 
 applyForce :: SF ((Time, Force), [Obstacle]) (Pos, Vel, [Obstacle])
 applyForce = proc ((_,f), obs) -> do 
@@ -22,19 +22,20 @@ applyForce = proc ((_,f), obs) -> do
     returnA -< (pos, vel, obs) 
     
 
-parseDirection :: Float -> SF (Time, Event Direction) (Time, Force)
-parseDirection c = arrPrim (\(t, dir) -> 
-    (t, case dir of
-        Event Types.None -> zeroVector
-        NoEvent -> zeroVector
-        Event Types.Right -> c *^ (vector2 100.0 0.0)
-        Event Types.Left -> c *^ (vector2 (-100.0) 0.0)
-        Event Types.Up -> c *^ (vector2 0.0 100.0)
-        Event Types.Down -> c *^ (vector2 0.0 (-100.0))
-        ))
+parseDirection :: Float -> (Time, Event [Direction])  -> (Time, Force)
+parseDirection c (t, dirs) = if isEvent dirs then (t, c *^ (mergeDirections $ fromEvent dirs)) else (t, zeroVector)
 
-simulate :: SF ((Time, Event Direction), [Obstacle]) (Pos, Vel, [Obstacle])
-simulate = first (parseDirection 10) >>> applyForce
+mergeDirections :: [Direction] -> Force
+mergeDirections dirs = if norm force > 0 then normalize force else zeroVector where
+    force = foldl (^+^) zeroVector (map (\dir -> case dir of
+        Types.None -> zeroVector
+        Types.Right -> vector2 1.0 0.0
+        Types.Left -> vector2 (-1.0) 0.0
+        Types.Up -> vector2 0.0 1.0
+        Types.Down -> vector2 0.0 (-1.0)) dirs)
+
+simulate :: SF ((Time, Event [Direction]), [Obstacle]) (Pos, Vel, [Obstacle])
+simulate = first (arrPrim (parseDirection 500)) >>> applyForce
 
 checkCollisions :: ((Pos, Vel) , [Obstacle]) -> Force
 checkCollisions ((p,v), obs) = (checkCollision p v obs) *^ v

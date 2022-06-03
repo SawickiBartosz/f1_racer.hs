@@ -32,6 +32,7 @@ executable f1racer
     , base >=4.7 && <5
     , bytestring
     , cassava
+    , containers
     , gloss
     , linear
     , simple-affine-space
@@ -57,6 +58,7 @@ test-suite spec
     , base >=4.7 && <5
     , bytestring
     , cassava
+    , containers
     , gloss
     , linear
     , simple-affine-space

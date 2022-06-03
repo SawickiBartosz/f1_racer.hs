@@ -22,6 +22,8 @@ dependencies:
   - bytestring
   - vector
   - split
+  - containers
+  
 executables:
   f1racer:
     source-dirs:      src
