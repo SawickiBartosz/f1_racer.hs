@@ -60,7 +60,7 @@ renderWorld :: World -> Picture
 renderWorld (World cars' obs t) = pictures $ (map renderCar cars') ++ (map renderObstacle obs) ++ [scale 0.1 0.1 (text $ show $ ((round t) :: Integer))]
 
 renderCar :: Car -> Picture
-renderCar (Car p v c) =  Color c $ pictures [translate (vector2X p) (vector2Y p) (ThickCircle 5 10), 
+renderCar (Car p v c) =  Color c $ pictures [translate (vector2X p) (vector2Y p) (ThickCircle 4 7), 
                                              translate 50 200 $ scale 0.1 0.1 (text $ show v)]
 
 renderObstacle :: Obstacle -> Picture

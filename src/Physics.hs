@@ -35,7 +35,7 @@ mergeDirections dirs = if norm force > 0 then normalize force else zeroVector wh
         Types.Down -> vector2 0.0 (-1.0)) dirs)
 
 simulate :: SF ((Time, Event [Direction]), [Obstacle]) (Pos, Vel, [Obstacle])
-simulate = first (arrPrim (parseDirection 500)) >>> applyForce
+simulate = first (arrPrim (parseDirection 250)) >>> applyForce
 
 checkCollisions :: ((Pos, Vel) , [Obstacle]) -> Force
 checkCollisions ((p,v), obs) = (checkCollision p v obs) *^ v
