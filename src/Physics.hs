@@ -12,7 +12,7 @@ drag v = (-c * (norm v)) *^ (normalize v)
             where c = 0.05
 
 applyForce :: SF ((Time, Force), [Obstacle]) (Pos, Vel, [Obstacle])
-applyForce = proc ((t,f), obs) -> do 
+applyForce = proc ((_,f), obs) -> do 
     rec
         acc <- identity -< f ^-^ rappelingForce ^-^ dragForce
         vel <- integral -< acc
@@ -40,7 +40,7 @@ checkCollisions :: ((Pos, Vel) , [Obstacle]) -> Force
 checkCollisions ((p,v), obs) = (checkCollision p v obs) *^ v
 
 checkCollision :: Pos -> Vel -> [Obstacle] -> Float
-checkCollision p _ obs = maximum $ map (\(Obstacle oPos oSize sf) -> if (vector2X p) >= (vector2X oPos) && 
+checkCollision p _ obs = maximum $ map (\(Obstacle oPos oSize sf') -> if (vector2X p) >= (vector2X oPos) && 
                                            (vector2X p) <= (vector2X oPos + vector2X oSize) &&
                                            (vector2Y p) >= (vector2Y oPos) && 
-                                           (vector2Y p) <= (vector2Y oPos + vector2Y oSize) then sf else  0.0) obs
+                                           (vector2Y p) <= (vector2Y oPos + vector2Y oSize) then sf' else  0.0) obs

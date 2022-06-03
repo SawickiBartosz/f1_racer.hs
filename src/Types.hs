@@ -1,15 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-#OPTIONS -Wall #-}
 
 module Types where
 import Data.Vector2
 import FRP.Yampa
 import Graphics.Gloss.Data.Color
 import GHC.Generics (Generic)
-import Control.Monad (mzero)
 import Data.Csv
-import Data.List
-import Data.Vector
-import Data.List.Split
 import qualified Graphics.Gloss.Interface.IO.Game as G
 
 type InputEvent = G.Event
@@ -50,10 +47,10 @@ data ParsableObstacle  = ParsableObstacle{
 } deriving (Generic, Show)
 
 fromParsableObstacle :: ParsableObstacle -> Obstacle
-fromParsableObstacle (ParsableObstacle px py sx sy sf) = Obstacle (vector2 px py) (vector2 sx sy) sf
+fromParsableObstacle (ParsableObstacle px py sx sy sf') = Obstacle (vector2 px py) (vector2 sx sy) sf'
 
 toParsableObstacle :: Obstacle -> ParsableObstacle
-toParsableObstacle (Obstacle p s sf) = ParsableObstacle (vector2X p) (vector2Y p) (vector2X s) (vector2Y s) sf
+toParsableObstacle (Obstacle p s sf') = ParsableObstacle (vector2X p) (vector2Y p) (vector2X s) (vector2Y s) sf'
 
 
 instance ToRecord ParsableObstacle

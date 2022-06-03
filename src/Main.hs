@@ -1,11 +1,10 @@
--- {-# LANGUAGE Arrows #-}
+{-#OPTIONS -Wall #-}
 module Main where
 
 import FRP.Yampa
 import Physics
 import PlayYampa
 import Types
-import Control.Concurrent
 import Data.Vector2
 import Data.Csv
 import qualified Data.Vector as DV
@@ -17,34 +16,37 @@ import qualified Graphics.Gloss.Interface.IO.Game as G
 main :: IO ()
 main = do
   csvData <- BL.readFile "world.csv"
-  obstacles <- case ((decode NoHeader csvData) :: Either String (DV.Vector ParsableObstacle)) of
-        Prelude.Left err -> return []
+  obs <- case ((decode NoHeader csvData) :: Either String (DV.Vector ParsableObstacle)) of
+        Prelude.Left _ -> return []
         Prelude.Right x -> return $ DV.toList $ DV.map fromParsableObstacle x
   playYampa
       (InWindow "F1 Racer" (800, 600) (200, 200))
       white
       60
-      (mainSF obstacles)
+      (mainSF obs)
 
 mainSF :: [Obstacle] ->  SF (Event InputEvent) Picture
-mainSF obstacles = ((FRP.Yampa.time &&& parseInput) &&& (constant obstacles)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr makeWorld >>> arr renderWorld
+mainSF obs = ((FRP.Yampa.time &&& parseInput) &&& (constant obs)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr makeWorld >>> arr renderWorld
 
 
 parseInput :: SF (Event InputEvent) (Event Direction)
-parseInput = arr $ \event ->
-  case event of
-    Event (G.EventKey (G.SpecialKey G.KeyUp) G.Down _ _) -> event `tag` Types.Up
-    Event (G.EventKey (G.SpecialKey G.KeyDown) G.Down _ _) -> event `tag` Types.Down
-    Event (G.EventKey (G.SpecialKey G.KeyLeft) G.Down _ _) -> event `tag` Types.Left
-    Event (G.EventKey (G.SpecialKey G.KeyRight) G.Down _ _) -> event `tag` Types.Right
-    _ -> event `tag` None
+parseInput = arr $ \e ->
+  case e of
+    Event (G.EventKey (G.SpecialKey G.KeyUp) G.Down _ _) -> e `tag` Types.Up
+    Event (G.EventKey (G.SpecialKey G.KeyDown) G.Down _ _) -> e `tag` Types.Down
+    Event (G.EventKey (G.SpecialKey G.KeyLeft) G.Down _ _) -> e `tag` Types.Left
+    Event (G.EventKey (G.SpecialKey G.KeyRight) G.Down _ _) -> e `tag` Types.Right
+    _ -> e `tag` None
     -- // TODO trigger directions if key is crrently pressed 
+
+
+
 
 makeWorld :: ((Pos, Vel, [Obstacle]), Time) -> World
 makeWorld ((p,v, obs), t) = World ([Car p v red]) obs t
 
 renderWorld :: World -> Picture
-renderWorld (World cars obstacles t) = pictures $ (map renderCar cars) ++ (map renderObstacle obstacles) ++ [scale 0.1 0.1 (text $ show $ round t)]
+renderWorld (World cars' obs t) = pictures $ (map renderCar cars') ++ (map renderObstacle obs) ++ [scale 0.1 0.1 (text $ show $ ((round t) :: Integer))]
 
 renderCar :: Car -> Picture
 renderCar (Car p v c) =  Color c $ pictures [translate (vector2X p) (vector2Y p) (ThickCircle 5 10), 
