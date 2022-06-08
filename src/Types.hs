@@ -11,10 +11,19 @@ import qualified Graphics.Gloss.Interface.IO.Game as G
 
 type InputEvent = G.Event
 
+data GameState = Running | Finished deriving (Show, Eq)
+
+instance Ord GameState where
+    compare Running Finished = LT
+    compare Finished Running = GT
+    compare _ _ = EQ
+
 data World = World {
     cars :: [Car]
    ,obstacles :: [Obstacle]
+   ,finish :: Obstacle
    ,time :: Time
+   ,state :: GameState
 } deriving Show
 
 data Car = Car {
@@ -30,7 +39,26 @@ type Pos = Vector2 Float
 type Mass = Float
 type Size = Vector2 Float
 
-data Direction = Up | Down | Right | Left | None
+data Direction = Up | Down | Right | Left | None deriving Eq
+
+data Controls = Space | P1 | P2 | R | W | S | A | D | KeyUp | KeyDown | KeyRight | KeyLeft | NoControl deriving Eq
+
+controlToDirection :: Controls -> Event [Controls] -> Event [Direction]
+controlToDirection P1 e = if isEvent e then catEvents $ map tagControl (fromEvent e) else NoEvent where 
+    tagControl x = case x of 
+        KeyDown -> Event Down
+        KeyUp -> Event Up
+        KeyLeft -> Event Types.Left
+        KeyRight -> Event Types.Right
+        _ -> Event None
+
+controlToDirection P2 e = if isEvent e then catEvents $ map tagControl (fromEvent e) else NoEvent where 
+    tagControl x = case x of 
+        S -> Event Down
+        W -> Event Up
+        A -> Event Types.Left
+        D -> Event Types.Right
+        _ -> Event None
 
 data Obstacle = Obstacle {
     pos :: !Pos

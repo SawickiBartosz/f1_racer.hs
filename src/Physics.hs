@@ -11,19 +11,21 @@ drag zeroVector = zeroVector
 drag v = (-c * (norm v)) *^ (normalize v)
             where c = 0.2
 
-applyForce :: SF ((Time, Force), [Obstacle]) (Pos, Vel, [Obstacle])
-applyForce = proc ((_,f), obs) -> do 
+updateState :: SF (Force, [Obstacle], Obstacle) (Pos, Vel, [Obstacle], Obstacle, GameState)
+updateState = proc (f, obs, finish) -> do 
     rec
-        acc <- identity -< f ^-^ rappelingForce ^-^ dragForce
-        vel <- integral -< acc
-        pos <- integral -< vel
-        rappelingForce <- identity -< (checkCollisions ((pos, vel), obs))
+        acc <- identity -< f ^-^ rappelingForce ^-^ dragForce        
+        vel <- integral -< acc 
+        pos <- integral -< if state == Finished then zeroVector else vel
+        rappelingForce <- identity -< (collisionForce ((pos, vel), obs))
         dragForce <- identity -< drag vel
-    returnA -< (pos, vel, obs) 
+        state <- identity -< checkFinish pos finish
+    returnA -< (pos, vel, obs, finish, state) 
     
 
-parseDirection :: Float -> (Time, Event [Direction])  -> (Time, Force)
-parseDirection c (t, dirs) = if isEvent dirs then (t, c *^ (mergeDirections $ fromEvent dirs)) else (t, zeroVector)
+
+parseDirection :: Float -> Event [Direction] -> Force
+parseDirection c dirs = if isEvent dirs then c *^ (mergeDirections $ fromEvent dirs) else zeroVector
 
 mergeDirections :: [Direction] -> Force
 mergeDirections dirs = if norm force > 0 then normalize force else zeroVector where
@@ -34,14 +36,19 @@ mergeDirections dirs = if norm force > 0 then normalize force else zeroVector wh
         Types.Up -> vector2 0.0 1.0
         Types.Down -> vector2 0.0 (-1.0)) dirs)
 
-simulate :: SF ((Time, Event [Direction]), [Obstacle]) (Pos, Vel, [Obstacle])
-simulate = first (arrPrim (parseDirection 250)) >>> applyForce
+simulate :: SF (Event [Direction], ([Obstacle], Obstacle)) (Pos, Vel, [Obstacle], Obstacle, GameState)
+simulate = arrPrim (\(dir, (obs, finish)) ->  (parseDirection 100 dir, obs, finish)) >>> updateState
+collisionForce :: ((Pos, Vel) , [Obstacle]) -> Force
+collisionForce ((p,v), obs) = (checkCollisions' p v obs) *^ v
 
-checkCollisions :: ((Pos, Vel) , [Obstacle]) -> Force
-checkCollisions ((p,v), obs) = (checkCollision p v obs) *^ v
+checkCollisions' :: Pos -> Vel -> [Obstacle] -> Float
+checkCollisions' p _ obs = maximum $ map (checkCollision p) obs
 
-checkCollision :: Pos -> Vel -> [Obstacle] -> Float
-checkCollision p _ obs = maximum $ map (\(Obstacle oPos oSize sf') -> if (vector2X p) >= (vector2X oPos) && 
+checkCollision :: Pos -> Obstacle -> Float
+checkCollision p (Obstacle oPos oSize sf') = if (vector2X p) >= (vector2X oPos) && 
                                            (vector2X p) <= (vector2X oPos + vector2X oSize) &&
                                            (vector2Y p) >= (vector2Y oPos) && 
-                                           (vector2Y p) <= (vector2Y oPos + vector2Y oSize) then sf' else  0.0) obs
+                                           (vector2Y p) <= (vector2Y oPos + vector2Y oSize) then sf' else 0.0
+
+checkFinish :: Pos -> Obstacle -> GameState
+checkFinish p obs = if (checkCollision p obs) > 0 then Finished else Running
