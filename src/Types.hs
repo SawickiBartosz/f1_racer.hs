@@ -22,7 +22,7 @@ data World = World {
     cars :: [Car]
    ,obstacles :: [Obstacle]
    ,finish :: Obstacle
-   ,time :: Time
+   ,times :: [Time]
    ,state :: GameState
 } deriving Show
 
