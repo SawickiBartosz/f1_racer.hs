@@ -54,6 +54,4 @@ simulateDouble = ((switch (simulateWorld Types.P1 red) fromWorld) &&& (switch (s
 simulateWorld :: PlayerType -- ^ determining player
                 -> Color -- ^ color of rendered player's car
                 -> SF (Event [Controls], ([Obstacle], Finish)) (World, Event World)
-simulateWorld p col = (first $ arr (translateControls p)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr (makeWorld col)
-
-
+simulateWorld p color' = (first $ arr (translateControls p)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr (makeWorld color')

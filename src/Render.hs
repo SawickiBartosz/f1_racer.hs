@@ -25,7 +25,14 @@ renderWorld (World [_,_] _ _ ts Finished) = pictures $ [translate (-100) 0 $ sca
 
 -- | Render Car
 renderCar :: Car -> Picture
-renderCar (Car p v c) =  Color c $ translate (vector2X p) (vector2Y p) (ThickCircle 4 7)
+renderCar (Car p v c) = translate (vector2X p) (vector2Y p)
+                        $ rotate (90 - (vector2Theta v) * (180 /pi)) 
+                        $ pictures $ [Color c $ polygon 
+                                      $ pathFromPosSize (vector2 (-5) (-10)) (vector2 10 20),
+                                      polygon $ pathFromPosSize (vector2 (-7) (-9)) (vector2 2 3),
+                                      polygon $ pathFromPosSize (vector2 (5) (-9)) (vector2 2 3),
+                                      polygon $ pathFromPosSize (vector2 (-7) (6)) (vector2 2 3),
+                                      polygon $ pathFromPosSize (vector2 (5) (6)) (vector2 2 3)]
 
 -- | Based on times render end results of 2 players
 renderWinner :: [Time] -> [Picture]

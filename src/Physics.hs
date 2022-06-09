@@ -15,15 +15,15 @@ drag v = (-c * (norm v)) *^ (normalize v)
 
 -- | SF utilising input force, obstacles and finish point returning components of a world
 updateState :: SF (Force, [Obstacle], Finish) (Pos, Vel, [Obstacle], Finish, GameState)
-updateState = proc (f, obs, finish) -> do 
+updateState = proc (f, obs, finish') -> do 
     rec
         acc <- identity -< f ^-^ rappelingForce ^-^ dragForce        
         vel <- integral -< acc 
         pos <- integral -< if state == Finished then zeroVector else vel
         rappelingForce <- identity -< (collisionForce ((pos, vel), obs))
         dragForce <- identity -< drag vel
-        state <- identity -< checkFinish pos finish
-    returnA -< (pos, vel, obs, finish, state) 
+        state <- identity -< checkFinish pos finish'
+    returnA -< (pos, vel, obs, finish', state) 
     
 -- | translate input events to force 
 parseDirection :: Float -- ^ constant to multiply force by, the bigger, the faster objects in game seem
@@ -43,7 +43,7 @@ mergeDirections dirs = if norm force > 0 then normalize force else zeroVector wh
 
 -- | main physics simulation
 simulate :: SF (Event [Direction], ([Obstacle], Finish)) (Pos, Vel, [Obstacle], Finish, GameState)
-simulate = arrPrim (\(dir, (obs, finish)) ->  (parseDirection 250 dir, obs, finish)) >>> updateState
+simulate = arrPrim (\(dir, (obs, finish')) ->  (parseDirection 250 dir, obs, finish')) >>> updateState
 
 -- | calculate force resulting from collisions with obstacles
 collisionForce :: ((Pos, Vel) -- ^ position and velocity of an object
