@@ -6,18 +6,25 @@ import qualified Data.Set as S
 import Graphics.Gloss
 import qualified Graphics.Gloss.Interface.IO.Game as G
 
+-- | SF to translate pressed keys to list of Controls
 parseInput :: SF (Event InputEvent) (Event [Controls])
 parseInput = loopPre (S.empty) (arr parseInput')
 
-parseInput' :: (Event InputEvent, S.Set (G.Key)) ->  (Event [Controls], S.Set (G.Key))
+
+parseInput' :: (Event InputEvent, -- ^ Incoming key presses
+                S.Set (G.Key)) -- ^ Set containing currently pressed keys
+                ->  (Event [Controls], -- ^ Event of Controls generated from pressed keys
+                    S.Set (G.Key)) -- ^ Updated set of pressed keys
 parseInput' (input, set) = (keysSetToControls $ inputToKeysSet input set, inputToKeysSet input set)
 
+-- | Update set base on incoming events
 inputToKeysSet :: Event InputEvent -> S.Set (G.Key) -> S.Set (G.Key)
 inputToKeysSet (Event (G.EventKey k G.Down _ _)) set = S.insert k set
 inputToKeysSet (Event (G.EventKey k G.Up _ _)) set = S.delete k set
 inputToKeysSet (Event _) set = set
 inputToKeysSet NoEvent set = set
 
+-- | Map keys in set to Event od Controls
 keysSetToControls :: S.Set (G.Key) -> Event [Controls]
 keysSetToControls set = catEvents $ map (\k -> 
   case k of
@@ -36,5 +43,8 @@ keysSetToControls set = catEvents $ map (\k ->
     _                         -> Event Types.NoControl)
   (S.toList set)
 
-translateControls :: Controls -> (Event [Controls], ([Obstacle], Finish)) -> (Event [Direction], ([Obstacle], Finish))
-translateControls p (ctrls, (obs, fin)) = ((controlToDirection p ctrls), (obs, fin))
+-- | trnslate Controls to directions with regard to player type
+translateControls :: Controls -- ^ Player type
+                    -> Event [Controls] 
+                    -> Event [Direction]
+translateControls p ctrls = controlToDirection p ctrls

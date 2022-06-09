@@ -27,26 +27,33 @@ main = do
       60
       (mainSF (init obs) (last obs))
 
-mainSF :: [Obstacle] -> Finish ->  SF (Event InputEvent) Picture
+mainSF :: [Obstacle] -- ^ List of obstacles in the world
+        -> Finish  -- ^ Finish element
+        ->  SF (Event InputEvent) Picture 
 mainSF obs finish' = dSwitch ((constant renderIntro) &&& parseInput) 
                            (\ctrls -> if Types.P1 `elem` ctrls
                               then runGame obs finish' simulateSingle 
                               else runGame obs finish' simulateDouble)
-
-runGame :: [Obstacle] -> 
-            Finish ->   
-            SF (Event [Controls], ([Obstacle], Finish)) World ->
+-- | Signal Function of the game 
+runGame :: [Obstacle] -> -- ^ List of obstacles in the world
+            Finish ->    -- ^ Finish element
+            SF (Event [Controls], ([Obstacle], Finish)) World -> -- ^ SF from inputs to World
             SF (Event InputEvent) Picture
 runGame obs finish' simulation = (parseInput &&& (constant obs &&& constant finish')) >>>
                                   simulation >>> arr renderWorld
 
+-- | Single player simulation 
 simulateSingle :: SF (Event [Controls], ([Obstacle], Finish)) World
 simulateSingle = switch (simulateWorld Types.P1 red) fromWorld
 
+-- | Double player simulation 
 simulateDouble :: SF (Event [Controls], ([Obstacle], Finish)) World
 simulateDouble = ((switch (simulateWorld Types.P1 red) fromWorld) &&& (switch (simulateWorld Types.P2 blue) fromWorld)) >>> arr mergeWorlds
 
-simulateWorld :: Controls -> Color -> SF (Event [Controls], ([Obstacle], Finish)) (World, Event World)
-simulateWorld c col = arr (translateControls c) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr (makeWorld col)
+-- | Inner simulation function
+simulateWorld :: Controls -- ^ control determining player
+                -> Color -- ^ color of rendered player's car
+                -> SF (Event [Controls], ([Obstacle], Finish)) (World, Event World)
+simulateWorld c col = (first $ arr (translateControls c)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr (makeWorld col)
 
 
