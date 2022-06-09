@@ -10,7 +10,7 @@ import qualified Graphics.Gloss.Interface.IO.Game as G
 parseInput :: SF (Event InputEvent) (Event [Controls])
 parseInput = loopPre (S.empty) (arr parseInput')
 
-
+-- | Inner function to parse input
 parseInput' :: (Event InputEvent, -- ^ Incoming key presses
                 S.Set (G.Key)) -- ^ Set containing currently pressed keys
                 ->  (Event [Controls], -- ^ Event of Controls generated from pressed keys
@@ -42,9 +42,4 @@ keysSetToControls set = catEvents $ map (\k ->
     (G.Char '2')              -> Event Types.Num2
     _                         -> Event Types.NoControl)
   (S.toList set)
-
--- | translate Controls to directions with regard to player type
-translateControls :: PlayerType -- ^ Player type
-                    -> Event [Controls] 
-                    -> Event [Direction]
-translateControls p ctrls = controlToDirection p ctrls
+  
