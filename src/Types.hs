@@ -19,10 +19,15 @@ instance Ord GameState where
     compare _ _ = EQ
 
 data World = World {
+    -- | Cars in the World
     cars :: [Car]
+    -- | Obstacles in the World
    ,obstacles :: [Obstacle]
-   ,finish :: Obstacle
+    -- | Finish in the World
+   ,finish :: Finish
+    -- | Times of players
    ,times :: [Time]
+    -- | Current state
    ,state :: GameState
 } deriving Show
 
@@ -43,6 +48,7 @@ data Direction = Up | Down | Right | Left | None deriving Eq
 
 data Controls = Space | P1 | P2 | R | W | S | A | D | KeyUp | KeyDown | KeyRight | KeyLeft | NoControl deriving Eq
 
+-- | Translate controls to directions based on player type
 controlToDirection :: Controls -> Event [Controls] -> Event [Direction]
 controlToDirection P1 e = if isEvent e then catEvents $ map tagControl (fromEvent e) else NoEvent where 
     tagControl x = case x of 
@@ -66,8 +72,10 @@ data Obstacle = Obstacle {
    ,slowingForce :: !Float
 } deriving (Generic, Show)
 
+-- | Finish has the same properties as Obstacle
 type Finish = Obstacle
 
+-- | Obstacle but with basic types insted of Vectors to be genericaly parsed
 data ParsableObstacle  = ParsableObstacle{
     posx :: Float
    ,posy :: Float
@@ -76,12 +84,15 @@ data ParsableObstacle  = ParsableObstacle{
    ,sf :: Float
 } deriving (Generic, Show)
 
+-- | ParsableObstacle <-> Obstacle conversion
 fromParsableObstacle :: ParsableObstacle -> Obstacle
 fromParsableObstacle (ParsableObstacle px py sx sy sf') = Obstacle (vector2 px py) (vector2 sx sy) sf'
 
+-- | ParsableObstacle <-> Obstacle conversion
 toParsableObstacle :: Obstacle -> ParsableObstacle
 toParsableObstacle (Obstacle p s sf') = ParsableObstacle (vector2X p) (vector2Y p) (vector2X s) (vector2Y s) sf'
 
-
+-- | instances to read/write bojects to CSV file
 instance ToRecord ParsableObstacle
+-- | instances to read/write bojects to CSV file
 instance FromRecord ParsableObstacle
