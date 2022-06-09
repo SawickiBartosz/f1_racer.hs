@@ -38,13 +38,13 @@ keysSetToControls set = catEvents $ map (\k ->
     (G.Char 's')              -> Event Types.S
     (G.Char 'a')              -> Event Types.A
     (G.Char 'd')              -> Event Types.D
-    (G.Char '1')              -> Event Types.P1
-    (G.Char '2')              -> Event Types.P2
+    (G.Char '1')              -> Event Types.Num1
+    (G.Char '2')              -> Event Types.Num2
     _                         -> Event Types.NoControl)
   (S.toList set)
 
--- | trnslate Controls to directions with regard to player type
-translateControls :: Controls -- ^ Player type
+-- | translate Controls to directions with regard to player type
+translateControls :: PlayerType -- ^ Player type
                     -> Event [Controls] 
                     -> Event [Direction]
 translateControls p ctrls = controlToDirection p ctrls

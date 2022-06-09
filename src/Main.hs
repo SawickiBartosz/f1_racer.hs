@@ -31,7 +31,7 @@ mainSF :: [Obstacle] -- ^ List of obstacles in the world
         -> Finish  -- ^ Finish element
         ->  SF (Event InputEvent) Picture 
 mainSF obs finish' = dSwitch ((constant renderIntro) &&& parseInput) 
-                           (\ctrls -> if Types.P1 `elem` ctrls
+                           (\ctrls -> if Types.Num1 `elem` ctrls
                               then runGame obs finish' simulateSingle 
                               else runGame obs finish' simulateDouble)
 -- | Signal Function of the game 
@@ -51,9 +51,9 @@ simulateDouble :: SF (Event [Controls], ([Obstacle], Finish)) World
 simulateDouble = ((switch (simulateWorld Types.P1 red) fromWorld) &&& (switch (simulateWorld Types.P2 blue) fromWorld)) >>> arr mergeWorlds
 
 -- | Inner simulation function
-simulateWorld :: Controls -- ^ control determining player
+simulateWorld :: PlayerType -- ^ determining player
                 -> Color -- ^ color of rendered player's car
                 -> SF (Event [Controls], ([Obstacle], Finish)) (World, Event World)
-simulateWorld c col = (first $ arr (translateControls c)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr (makeWorld col)
+simulateWorld p col = (first $ arr (translateControls p)) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr (makeWorld col)
 
 

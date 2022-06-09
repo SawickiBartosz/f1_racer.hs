@@ -46,10 +46,12 @@ type Size = Vector2 Float
 
 data Direction = Up | Down | Right | Left | None deriving Eq
 
-data Controls = Space | P1 | P2 | R | W | S | A | D | KeyUp | KeyDown | KeyRight | KeyLeft | NoControl deriving Eq
+data Controls = Space | Num1 | Num2 | R | W | S | A | D | KeyUp | KeyDown | KeyRight | KeyLeft | NoControl deriving Eq
+
+data PlayerType = P1 | P2
 
 -- | Translate controls to directions based on player type
-controlToDirection :: Controls -> Event [Controls] -> Event [Direction]
+controlToDirection :: PlayerType -> Event [Controls] -> Event [Direction]
 controlToDirection P1 e = if isEvent e then catEvents $ map tagControl (fromEvent e) else NoEvent where 
     tagControl x = case x of 
         KeyDown -> Event Down
