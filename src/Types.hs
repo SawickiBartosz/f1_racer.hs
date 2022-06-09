@@ -66,6 +66,8 @@ data Obstacle = Obstacle {
    ,slowingForce :: !Float
 } deriving (Generic, Show)
 
+type Finish = Obstacle
+
 data ParsableObstacle  = ParsableObstacle{
     posx :: Float
    ,posy :: Float

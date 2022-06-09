@@ -35,7 +35,7 @@ renderWinner [t1,t2]
 renderObstacle :: Obstacle -> Picture
 renderObstacle (Obstacle p s _) = polygon $ pathFromPosSize p s
 
-renderFinish :: Obstacle -> Picture
+renderFinish :: Finish -> Picture
 renderFinish (Obstacle p s _) = Color red $ polygon $ pathFromPosSize p s
 
 pathFromPosSize :: Pos -> Vector2 Float -> Path

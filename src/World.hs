@@ -8,7 +8,7 @@ import Graphics.Gloss
 fromWorld :: World -> SF a World
 fromWorld (World cars' obs fin t s) = constant (World cars' obs fin t s)
 
-makeWorld :: Color ->  ((Pos, Vel, [Obstacle], Obstacle, GameState), Time) -> (World, Event World)
+makeWorld :: Color ->  ((Pos, Vel, [Obstacle], Finish, GameState), Time) -> (World, Event World)
 makeWorld c ((p,v, obs, fin, Running), t) = (World ([Car p v c]) obs fin [t] Running, NoEvent)
 makeWorld c ((p,v, obs, fin, Finished), t) = (World ([Car p v c]) obs fin [t] Finished, Event (World ([Car p v c]) obs fin [t] Finished))
 

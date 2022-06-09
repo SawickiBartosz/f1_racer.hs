@@ -11,7 +11,7 @@ drag zeroVector = zeroVector
 drag v = (-c * (norm v)) *^ (normalize v)
             where c = 0.2
 
-updateState :: SF (Force, [Obstacle], Obstacle) (Pos, Vel, [Obstacle], Obstacle, GameState)
+updateState :: SF (Force, [Obstacle], Finish) (Pos, Vel, [Obstacle], Finish, GameState)
 updateState = proc (f, obs, finish) -> do 
     rec
         acc <- identity -< f ^-^ rappelingForce ^-^ dragForce        
@@ -37,8 +37,9 @@ mergeDirections dirs = if norm force > 0 then normalize force else zeroVector wh
         Types.Up -> vector2 0.0 1.0
         Types.Down -> vector2 0.0 (-1.0)) dirs)
 
-simulate :: SF (Event [Direction], ([Obstacle], Obstacle)) (Pos, Vel, [Obstacle], Obstacle, GameState)
+simulate :: SF (Event [Direction], ([Obstacle], Finish)) (Pos, Vel, [Obstacle], Finish, GameState)
 simulate = arrPrim (\(dir, (obs, finish)) ->  (parseDirection 250 dir, obs, finish)) >>> updateState
+
 collisionForce :: ((Pos, Vel) , [Obstacle]) -> Force
 collisionForce ((p,v), obs) = (checkCollisions' p v obs) *^ v
 
@@ -51,5 +52,5 @@ checkCollision p (Obstacle oPos oSize sf') = if (vector2X p) >= (vector2X oPos) 
                                            (vector2Y p) >= (vector2Y oPos) && 
                                            (vector2Y p) <= (vector2Y oPos + vector2Y oSize) then sf' else 0.0
 
-checkFinish :: Pos -> Obstacle -> GameState
+checkFinish :: Pos -> Finish -> GameState
 checkFinish p obs = if (checkCollision p obs) > 0 then Finished else Running

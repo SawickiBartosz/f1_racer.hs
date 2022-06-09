@@ -36,5 +36,5 @@ keysSetToControls set = catEvents $ map (\k ->
     _                         -> Event Types.NoControl)
   (S.toList set)
 
-translateControls :: Controls -> (Event [Controls], ([Obstacle], Obstacle)) -> (Event [Direction], ([Obstacle], Obstacle))
+translateControls :: Controls -> (Event [Controls], ([Obstacle], Finish)) -> (Event [Direction], ([Obstacle], Finish))
 translateControls p (ctrls, (obs, fin)) = ((controlToDirection p ctrls), (obs, fin))
