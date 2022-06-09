@@ -27,6 +27,7 @@ updateState = proc (f, obs, finish) -> do
 parseDirection :: Float -> Event [Direction] -> Force
 parseDirection c dirs = if isEvent dirs then c *^ (mergeDirections $ fromEvent dirs) else zeroVector
 
+
 mergeDirections :: [Direction] -> Force
 mergeDirections dirs = if norm force > 0 then normalize force else zeroVector where
     force = foldl (^+^) zeroVector (map (\dir -> case dir of
@@ -37,7 +38,7 @@ mergeDirections dirs = if norm force > 0 then normalize force else zeroVector wh
         Types.Down -> vector2 0.0 (-1.0)) dirs)
 
 simulate :: SF (Event [Direction], ([Obstacle], Obstacle)) (Pos, Vel, [Obstacle], Obstacle, GameState)
-simulate = arrPrim (\(dir, (obs, finish)) ->  (parseDirection 100 dir, obs, finish)) >>> updateState
+simulate = arrPrim (\(dir, (obs, finish)) ->  (parseDirection 250 dir, obs, finish)) >>> updateState
 collisionForce :: ((Pos, Vel) , [Obstacle]) -> Force
 collisionForce ((p,v), obs) = (checkCollisions' p v obs) *^ v
 

@@ -47,7 +47,6 @@ simulateDouble = ((switch (simulateWorld Types.P1 red) fromWorld) &&& (switch (s
 simulateWorld :: Controls -> Color -> SF (Event [Controls], ([Obstacle], Obstacle)) (World, Event World)
 simulateWorld c col = arr (translateControls c) >>> (Physics.simulate &&& FRP.Yampa.time) >>> arr (makeWorld col)
 
-
 mainSF :: [Obstacle] -> Obstacle ->  SF (Event InputEvent) Picture
 mainSF obs finish' = dSwitch ((constant renderIntro) &&& parseInput) 
                            (\ctrls -> if Types.P1 `elem` ctrls
